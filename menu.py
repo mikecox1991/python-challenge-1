@@ -12,7 +12,7 @@ menu = {
         "Teriyaki Chicken": 9.99,
         "Sushi": 7.49,
         "Pad Thai": 6.99,
-        "Pizza": {
+        "Pizza ": {
             "Cheese": 8.99,
             "Pepperoni": 10.99,
             "Vegetarian": 9.99
@@ -23,17 +23,17 @@ menu = {
         }
     },
     "Drinks": {
-        "Soda": {
+        "Soda ": {
             "Small": 1.99,
             "Medium": 2.49,
             "Large": 2.99
         },
-        "Tea": {
+        "Tea ": {
             "Green": 2.49,
             "Thai iced": 3.99,
             "Irish breakfast": 2.49
         },
-        "Coffee": {
+        "Coffee ": {
             "Espresso": 2.99,
             "Flat white": 2.99,
             "Iced": 3.49
@@ -41,7 +41,7 @@ menu = {
     },
     "Dessert": {
         "Chocolate lava cake": 10.99,
-        "Cheesecake": {
+        "Cheesecake ": {
             "New York": 4.99,
             "Strawberry": 6.49
         },
@@ -50,8 +50,41 @@ menu = {
         "Fried banana": 4.49
     }
 }
+#added MLC 3/28/24
+#We had to remove this from the while loop, if you dont it keeps getting over written.
+menu_selected_items = {}
+def print_reciept():
+    #added MLC 3/28/24
+    #Line 59 looks for q and if anything is in our dictionary on line 55.
+    if menu_category == "q" and len(menu_selected_items) > 0:
+        total = 0
+        name = input("What is the order name?")
+        print(menu_dashes)
+        print(f"Receipt for: {name}")
+        print(menu_dashes)
+        print("Quantity | Item name                | Price")
+        print("---------|--------------------------|-------")
+        #added MLC 3/28/24
+        #Line 69 we total, mulitply the quantities and print each item in our dictionary,
+        #on line 55. At the end we print total. 
+        for key, (p, q) in menu_selected_items.items():
+            
+            item_total = p * q
+            total += item_total
+            num_item_spaces = 24 - len(key)
+            item_spaces = " " * num_item_spaces
+            print(f"{q}        | "
+                + f"{key}{item_spaces} | ${item_total:.2f}")
+        print(menu_dashes)
+        print(f"Total: ${total:.2f}")
+        print(menu_dashes)
+    #added MLC 3/28/24
+    #Line 83 is for those who did not want anything, and thats okay. 
+    else:
+        print("Thank you for dropping in!")
 
-menu_dashes = "-" * 42
+
+menu_dashes = "-" * 44
 
 # Launch the store and present a greeting to the customer
 print("Welcome to the variety food truck.")
@@ -66,10 +99,11 @@ while True:
     i = 1
     # Create a dictionary to store the menu for later retrieval 
     menu_items = {}
-
-    #selected items will be populated in this list. -MCOX 3/28/24
-    menu_selected_items = []
     
+   
+    #selected items will be populated in this list. -MCOX 3/28/24
+    
+
     
     # Print the options to choose from menu headings (all the first level 
     # dictionary items in menu).
@@ -85,6 +119,9 @@ while True:
 
     # Exit the loop if user typed 'q'
     if menu_category == 'q':
+        #added MLC 3/28/24
+        #We call our function here to build and total everything.
+        print_reciept()
         break
     # Check if the customer's input is a number
     elif menu_category.isdigit():
@@ -102,14 +139,21 @@ while True:
             print("Item # | Item name                | Price")
             print("-------|--------------------------|-------")
 
+            #Save sub item menu for building reciept
+            sub_item_menu = {}
             # Initialize a menu item counter
             item_counter = 1
             # Print out the menu options from the menu_category_name
             for key, value in menu[menu_category_name].items():
                 # Check if the menu item is a dictionary to handle differently
-                if type(value) is dict:
+                if type(value) is dict:  
                     # Iterate through the dictionary items
                     for key2, value2 in value.items():
+                        #added MLC 3/28/24
+                        #Line 154 I take the choice and populate in sub_item_menu
+                        #but we had to add both key values and concatenate both values
+                        #to get the item name correct
+                        sub_item_menu[item_counter] = (key + key2, value2)
                         # Print the menu item
                         num_item_spaces = 24 - len(key + key2) - 3
                         item_spaces = " " * num_item_spaces
@@ -118,9 +162,13 @@ while True:
                               + f"${value2}")
                         # Add 1 to the item_counter
                         item_counter += 1
+
                 
                 else:
                     # Print the menu item
+                    #added MLC 3/28/24
+                    #Line 158 takes the choice and creates a smaller list inside sub_item_menu
+                    sub_item_menu[item_counter] = (key, value)
                     num_item_spaces = 24 - len(key)
                     item_spaces = " " * num_item_spaces
                     print(f"{item_counter}      | "
@@ -128,18 +176,49 @@ while True:
                     # Add 1 to the item_counter
                     item_counter += 1
             
-            menu_selected_items = []
+            # input("Type item number.")
+            
+            
+
             print(menu_dashes)
+            
+            #added MLC 3/28/24
+            #Here we get the customers selection, check for digit. 
             movement = input("Press enter to return to the main menu.\n or select item number:")
             if movement.isdigit():
-                quantity = int(input("How many would you like."))
-                selected_item = menu[menu_category][movement]
+                #added MLC 3/28/24
+                #We ask the customer how much they would like, or default to 1.
+                quantity_input = input("How many would you like:")
+                #added MLC 3/28/24
+                #So input come in as Strings and not integers we change that here.
+                if quantity_input == ' ':
+                    quantity = 1
+                    choice = int(movement)
+                else:
+                    choice = int(movement)
+                    quantity = int(quantity_input)
 
-
-
-                        
+                    #added MLC 3/28/24
+                    #Here we unpack the Tuple and we append to menu_selected_items.
+                    if choice in sub_item_menu:
+                        item_name, price = sub_item_menu[choice]
+                        menu_selected_items[item_name] = (price, quantity)                       
+                    #added MLC 3/28/24
+                    #This makes the menu able to go back.
+                    else:
+                        print(" ")                        
+            #added MLC 3/28/24
+            #This makes the menu able to go back.
             else:
                 print(" ")
+
+        else:
+            # Tell the customer they didn't select a menu option
+            print(f"{menu_category} was not a menu option.")
+    else:
+        # Tell the customer they didn't select a number
+        print("You didn't select a number.")
+
     
 
 
